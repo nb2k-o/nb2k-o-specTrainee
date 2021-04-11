@@ -1,62 +1,117 @@
 import './App.css';
 import Nav from './components/Nav';
 import Form from './components/Form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Data from './components/Data';
 import Conts from './components/Conts';
 
 
 function App() {
 
-    const[conts,setCont] = useState([
-      {
-      'id' : 1,
-      'sml': "yes",
-      'name' : "Presbo",
-      'email' : 'presbo@columbia.edu'
-      },
 
-      {
-      'id' : 2,
-      'name' : "John Jay Mouse",
-      'email' : 'mouse@columbia.edu'
-      },
+    const[conts,setCont] = useState([])
 
+    useEffect(() => fetchData());
 
-      { 
-      'id': 3,
-      'name': "Water Bottle Man",
-      'email' : 'flipper@columbia.com' 
-      },
+    const fetchData = async () => {
+      fetch('api/conts', {
+        method : 'GET',
+        headers: {
+          'Content-Type' : 'application/json'
+        }})
 
+        .then(response => {
+            if(response.status >= 200 && response.status < 300){
+              return response;
+            }
+            const error = new Error('HTTP Error ${response.statusText}');
+            error.status = response.statusText;
+            error.response = response;
+            console.log(error);
+            throw error;
+        })
+        .then(response => response.json()) 
+        .then(json => {
+          console.log(json);
+          setCont(json.data);
+
+        })
+        .catch(error => console.log(error));
+    };
     
-    ])
-    
-  
 
-    //Add Task
-  
+    //let current_id = conts.length +1;
 
     const addCont = (cont) => {
-      const id = conts.length + 1 
-      const newCont = {id,...cont}
-      setCont([...conts,newCont])
-    }
+      const newCont = {
+      'id': 1,
+      'name': cont.name,
+      'email': cont.id
+
+      };
+
+      
+
+      //Add Task
+      fetch('api/add_cont', {
+        method : 'POST',
+        body: JSON.stringify({cont: newCont}),
+        headers: {
+          'Content-Type' : 'application/json'
+        }})
+
+        .then(response => {
+            if(response.status >= 200 && response.status < 300){
+              return response;
+            }
+            const error = new Error('HTTP Error ${response.statusText}');
+            error.status = response.statusText;
+            error.response = response;
+            console.log(error);
+            throw error;
+        })
+        .then(response => response.json()) 
+        .then(json => {
+          console.log(json);
+          setCont(json.data);
+
+        })
+        .catch(error => console.log(error));
+    };
+  
+    
 
     //Delete Task
     const delCont = (id) => {
-      for (let i = 0; i < conts.length; i++) {
-        if(conts[i].id > id) {
-          conts[i].id -= 1
+      fetch('api/del_cont/${id}', {
+        method : 'POST',
+        headers: {
+          'Content-Type' : 'application/json'
+        }})
+
+        .then(response => {
+            if(response.status >= 200 && response.status < 300){
+              return response;
+            }
+            const error = new Error('HTTP Error ${response.statusText}');
+            error.status = response.statusText;
+            error.response = response;
+            console.log(error);
+            throw error;
+        })
+        .then(response => response.json()) 
+        .then(json => {
+          console.log(json);
+          setCont(json.data);
+
+        })
+        .catch(error => console.log(error));
+        for (let i = 0; i < conts.length; i++) {
+          if(conts[i].id > id) {
+            conts[i].id -= 1
+          }
         }
-      }
-
-      conts[id-1].id = -1
-
-      setCont(conts.filter((cont) => cont.id  !== -1))
-    }
-
-    
+    };     
     
 
     return (
@@ -65,15 +120,12 @@ function App() {
         <Nav/>     
 
         <Form onAdd = {addCont}/>  
-        
-        
-        {/* <Data num = "1:" sml = "yes" nam = "Presbo" email = 'presbo@columbia.edu'/>
-        <Data num = "2:" sml = "no" nam = "John Jay Mouse" email = 'mouse@columbia.edu'/>
-        <Data num = "3:" sml = "no" nam = "Water Bottle Man" email = 'flipper@columbia.com'/> */}
-
-        <Conts conts = {conts} onDelete = {delCont}/>
-
-
+        {conts.map(cont =>{
+          return(
+            <Conts cont = {cont} onDelete = {delCont}/>
+          )
+        })}
+      
       </div>
 
     );

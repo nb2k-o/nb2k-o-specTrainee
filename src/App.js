@@ -9,10 +9,10 @@ import Conts from './components/Conts';
 function App() {
 
 
-    const[conts,setCont] = useState([])
-
+    const[conts, setConts] = useState([])
+  
     useEffect(() => fetchData());
-
+    
     const fetchData = async () => {
       fetch('api/conts', {
         method : 'GET',
@@ -33,28 +33,29 @@ function App() {
         .then(response => response.json()) 
         .then(json => {
           console.log(json);
-          setCont(json.data);
+          setConts(json.data);
 
         })
         .catch(error => console.log(error));
     };
     
 
-    //let current_id = conts.length +1;
+    let current_id = conts.length+1;
+    
 
     const addCont = (cont) => {
       const newCont = {
-      'id': 1,
+      'id': current_id,
       'name': cont.name,
-      'email': cont.id
+      'email': cont.email,
 
       };
 
+      current_id ++;
       
-
       //Add Task
-      fetch('api/add_cont', {
-        method : 'POST',
+      fetch('/api/add_cont', {
+        method: 'POST',
         body: JSON.stringify({cont: newCont}),
         headers: {
           'Content-Type' : 'application/json'
@@ -71,10 +72,9 @@ function App() {
             throw error;
         })
         .then(response => response.json()) 
-        .then(json => {
+        .then(json =>  {
           console.log(json);
-          setCont(json.data);
-
+          conts = Array.from(json.data);
         })
         .catch(error => console.log(error));
     };
@@ -83,7 +83,10 @@ function App() {
 
     //Delete Task
     const delCont = (id) => {
-      fetch('api/del_cont/${id}', {
+
+
+      
+      fetch('/api/del_cont/${id}', {
         method : 'POST',
         headers: {
           'Content-Type' : 'application/json'
@@ -102,17 +105,12 @@ function App() {
         .then(response => response.json()) 
         .then(json => {
           console.log(json);
-          setCont(json.data);
-
+          conts = Array.from(json.data);
         })
         .catch(error => console.log(error));
-        for (let i = 0; i < conts.length; i++) {
-          if(conts[i].id > id) {
-            conts[i].id -= 1
-          }
-        }
+   
     };     
-    
+  
 
     return (
       <div className="App">
@@ -120,11 +118,10 @@ function App() {
         <Nav/>     
 
         <Form onAdd = {addCont}/>  
-        {conts.map(cont =>{
-          return(
-            <Conts cont = {cont} onDelete = {delCont}/>
-          )
-        })}
+          
+        <Conts conts = {conts} onDelete = {delCont}/>
+    
+            
       
       </div>
 
